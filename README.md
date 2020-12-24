@@ -98,7 +98,7 @@ This resulted in the following source and destination points:
 | 690, 450      | 1100, 0       |
 | 1100, 670     | 1100, 720     |
   
-I verified that my perspective transform was working as expected by drawing the src and dst points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image for both a straight line and a curved line.  
+I verified that my perspective transform was working as expected by drawing the src and dst points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image for both a straight line and a curved line.  Even though this shows transformed coordinates in a birds' eye view, There needed to estimate/detect curved line on the right. So It needs to calcuate curvature for this curved lines.
 [original vs warped image](./output_images/warped_StraightLine_CurvedLine.jpg)  
   
 4. lane-line pixels Identification(def find_lane_pixels(binary_warped):
@@ -139,8 +139,7 @@ After obtaining binary warped image, then I only take the half bottom of the ima
 And then used left_lane_inds and right_lane_inds to hold the pixel values contained within the boundaries of a given sliding window. I take the polynomial functions that fit before (left_fit and right_fit), along with a hyperparameter margin, to determine which activated pixels fall into the 'yellow' shaded areas in the below image. 
 The left and right line have been identified and I used thier x and y pixel positions to fit with a curved functional form( a second order polynomial curve):f(y) = Ay^2 + By + C (using `np.polyfit`). The lane lines in the warped image are near vertical and may have the same x value for more than one y value. 
 From test5.jpg I fit the 2nd order polynomial curve like this:
-![lane-line poly pixel]('./output_images/test5_poly.jpg')
-
+![lane-line poly pixel](./output_images/test5_poly.jpg)
 
 5. def measure_curvature(left_fit, right_fit, warped_combination):
 calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
@@ -171,7 +170,6 @@ Calculated the radius of curvature based on pixel values, so the radius is in pi
     ym_per_pix = 30/720 # meters per pixel in y dimension
     xm_per_pix = 3.7/700 # meters per pixel in x dimension
     ```
-
 6. result
 Everything is put together to project the lanes on an image at first, but later on, the same technique is used on a frame by frame processing of a video stream.
 Here is an example of my result on a test image with lanes, curvature, and position from center:
