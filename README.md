@@ -1,5 +1,6 @@
 # Advanced Lane Finding
-
+[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
+  
 The project goal is to write a software pipeline to identify the lane boundaries in a video and a detailed writeup of the project. 
   
 
@@ -52,7 +53,7 @@ All images in the [test_image folder](./test_images) are applied and saved by fo
 2. color transforms, gradients and combination of method with thresholded
 1) def abs_sobel_thresh, def mag_thresh, def dir_threshold  
 First of all, I experimented Sobel gradients openCV function(cv2.Sobel()) in both the x and the y directions to detect the lane lines and pick up other edges. Here's an example of my output for this experiment.  
-[Sobel Gradient](./output_images/sobel_gradient.jpg) 
+![Sobel Gradient](./output_images/sobel_gradient.jpg) 
 From left, ABS Thresholded X-direction Gradient, ABS Thresholded Y-direction Gradient, Magnitude, Directional 
     1. Taking the gradient in the x direction emphasizes edges closer to vertical.(the first image)
     2. Taking the gradient in the y direction emphasizes edges closer to horizontal.(the second image)
@@ -60,12 +61,25 @@ From left, ABS Thresholded X-direction Gradient, ABS Thresholded Y-direction Gra
     4. In case of lane lines, we're only interested in edges of a particular orientation so that by taking arctangent of x and y gradients the direction of the gradient is obtained. However the direction of the gradient is much noisier than the gradient magnitude.  
 2) def hls_select, def hls_threshold(image, thresh_l=(160,255), thres_s=(180,255)):  
 Secold, I explored HLS color space transforms and color thresholds. Here's an example of my output for this experiment. 
-[HLS Color Thresholds](./output_images/thresholded_test6.jpg)
+![HLS Color Thresholds](./output_images/HLS_test6.jpg)
+![HSV Color Thresholds](./output_images/HSV_test6.jpg)
+![LUV Color Thresholds](./output_images/LUV_test6.jpg)
+![LAB Color Thresholds](./output_images/LAB_test6.jpg)
+![RGB Color Thresholds](./output_images/RGB_test6.jpg)
 HLS L-channel measures the relative lightness or darkness of a color. S-channel, Saturation, measures relative colorfulness. So, as colors get lighter and closer to white, like lane colors, they have a lower saturation value. 
-Used a original [image](./test_images/test6.jpg)"the first image", converted to grayscale, and applied L-channel(the fourth image), S-channel(the thrid image) and figured The S channel picks up the lines well, thus applied S-channel with a threshold that identifies the lines(the second image). I used open CV function (cv2.cvtColor(image, cv2.COLOR_BGR2HLS)) to get HLS color space.
+Used a original ![test6](./test_images/test6.jpg) first converted to grayscale, and applied L-channel, S-channel, and figured The S channel picks up the lines well, thus applied S-channel with a threshold that identifies the lines(the second image). I used open CV function (cv2.cvtColor(image, cv2.COLOR_BGR2HLS)) to get HLS color space.
+* S-channel of HLS colorspace is good to find the yellow line
+* R-channel of RGB colorspace is pretty good to find required lines in some conditions.
+* L-channel of LAB colorspace for the white line.
+With all in combination with gradients, I got the final combined binary by adding bit-wise operation as follows 
+``code
+  combined[((gradx == 1) & (grady == 1)) | ((hls_binary == 1) & (lab_binary == 1)) | ((mag_binary == 1) & (dir_binary == 1))] = 1
+``
+
 
 3) Lastly, I experimented a combination of color and gradient thresholds to generate a binary image. 
 There is no "ground truth" when it comes to applying the combination of methods (i.e., color transforms, gradients). Just experimental threshold values are identified from experiments: thresh_Lchannel=(160,255), thres_Schannel=(180,255)
+
 
 3. A perspective transform (def warper(img, src, dst): )
 OpenCV function (cv2.getPerspectiveTransform) is used to correctly rectify each image to a "birds-eye view". To obtain "brids-eye view" simple ways is to investigate an image where the lane lines are straight, and find four points lying along the lines that, after perspective transform, make the lines look straight and vertical from a bird's eye view perspective.  
@@ -91,14 +105,14 @@ This resulted in the following source and destination points:
 | 1100, 670     | 1100, 720     |
   
 I verified that my perspective transform was working as expected by drawing the src and dst points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image for both a straight line and a curved line.  
-[original vs warped image](./output_images/warped_Straight_Curved.jpg)  
+[original vs warped image](./output_images/warped_StraightLine_CurvedLine.jpg)  
   
 4. lane-line pixels Identification(def find_lane_pixels(binary_warped):
 fit their positions with a 2nd order polynomial(def fit_polynomial(binary_warped):  
 After obtaining binary warped image, then I only take the half bottom of the image to identify the two highest peaks from a histogram as a starting point for determining where the lane lines are, and then use sliding windows moving upward in the image (further along the road) to determine where the lane lines go.  
 
    1. def find_lane_pixels(binary_warped):
-   A histogram approach was introduced to find the points belonging to each lane line to be able to do a polynomial adjust and find the clear line. split the histogram into two sides from a mid point, one for each lane line.
+   A histogram approach was introduced to find the points belonging to each lane line to be able to do a polynomial adjust and find the clear line. Then split the histogram into two region from a mid point ; One for left lane and one for right lane. Then small windows of size is move from bottom to top on left and right image seperately.Based on max histogram out, pixel location is calculated. The pixel location across the windows are saved in an array.
        ```python
         midpoint = np.int(histogram.shape[0]//2)
         leftx_base = np.argmax(histogram[:midpoint])
@@ -108,7 +122,7 @@ After obtaining binary warped image, then I only take the half bottom of the ima
    ,and if there are more than minpix, slide the window over to the mean of these pixels.
 
    2. def fit_polynomial(binary_warped):
-   After fidning lane line pixels, Fit a second order polynomial to each using `np.polyfit`  
+   After fidning lane line pixels, Fit a second order polynomial to each using `np.polyfit` to fit the pixel locations. 
   
     ```python
     left_fit = np.polyfit(lefty, leftx, 2)
@@ -137,6 +151,7 @@ From test5.jpg I fit the 2nd order polynomial curve like this:
 5. def measure_curvature(left_fit, right_fit, warped_combination):
 calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 Here the idea is to take the measurements of where the lane lines are and estimate how much the road is curving and where the vehicle is located with respect to the center of the lane. The radius of curvature may be given in meters assuming the curve of the road follows a circle. For the position of the vehicle, we can assume the camera is mounted at the center of the car and the deviation of the midpoint of the lane from the center of the image is the offset driver is looking for. As with the polynomial fitting, convert from pixels to meters.
+
     ```python
      ploty = np.linspace(0, warped_combination.shape[0]-1, warped_combination.shape[0] )
     left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
@@ -145,23 +160,32 @@ Here the idea is to take the measurements of where the lane lines are and estima
     left_fit_cr = np.polyfit(ploty*ym_per_pix, left_fitx*xm_per_pix, 2)
     right_fit_cr = np.polyfit(ploty*ym_per_pix, right_fitx*xm_per_pix, 2)
 
-
-   y_eval = np.max(ploty) #Define y-value where we want radius of curvature, choose the maximum y-value, corresponding to the bottom of the image
-   
-    ##### the calculation of R_curve (radius of curvature) #####
-    #left_curverad = 0  ## Implement the calculation of the left line here
-    #right_curverad = 0  ## Implement the calculation of the right line here
+    # Define y-value where we want radius of curvature
+    # choose the maximum y-value, corresponding to the bottom of the image
+    y_eval = np.max(ploty)
+    
+    ##### the calculation of R_curve (radius of curvature)
+    #left_curverad: Implement the calculation of the left line here
+    #right_curverad: Implement the calculation of the right line here
     left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
     right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
     average_curverad = (left_curverad+right_curverad)/2
+    ```
+Calculated the radius of curvature based on pixel values, so the radius is in pixel space, which is not the same as real world space. For this project, it is assumed that the lane is about 30 meters long and 3.7 meters wide. The position of the vehicle is identified by taking a point on the left and right lane respectively and center point of the lane is calculated. The center of the image in pixel is 640. The difference between lane and pixel center is then multiplied by meteres per pixel in x dimension (3.7/700) to obtain vehicle position off the center.
+    ```python
+    # Define conversions in x and y from pixels space to meters
+    ym_per_pix = 30/720 # meters per pixel in y dimension
+    xm_per_pix = 3.7/700 # meters per pixel in x dimension
     ```
 
 6. result
 Everything is put together to project the lanes on an image at first, but later on, the same technique is used on a frame by frame processing of a video stream.
 Here is an example of my result on a test image with lanes, curvature, and position from center:
-[test6](./output_images/fill_lane_7.jpg)
-All test image output filled with lanes, curvature, and position from center is here:
-[test6](./output_images/fill_lane_all.jpg)
+![test6](./output_images/fill_lane_7.jpg)
+All test image outputs filled with lanes, curvature, and position from center are saved here:
+[output_images](./output_images) by following naming convention : fill_lane_{number}.jpg
+fill_lane_0.jpg to fill_lane_7.jpg 
+All 8 images are stored in one figure: ![all_fill_lane](./output_images/fill_lane_all.jpg) 
 The fit from the rectified image has been warped back onto the original image and plotted to identify the lane boundaries. 
 
 ### Pipeline (videos) : 
