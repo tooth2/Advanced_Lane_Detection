@@ -34,8 +34,7 @@ I used cv2.findChessboardCorners() OpenCV functions to calculate the correct cam
   
 I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners. However, we assume 2D plane rather than 3D so the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image. Thus, objp is just a replicated array of coordinates, and 'objpoints' will be appended with a copy of it every time whenever chessboard corners in a test image are successfully detected. 'imgpoints' will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.
   
-I then used the output objpoints and imgpoints to compute the camera calibration and distortion coefficients using the cv2.calibrateCamera() OpenCV function by passing two arrays(objpoints, imgpoints) along with image size parameter. I applied this distortion correction to the test image using the cv2.undistort() function and obtained this result: 
-![calibration3.jpg vs undist](./output_images/cal3_undist.jpg)
+I then used the output objpoints and imgpoints to compute the camera calibration and distortion coefficients using the cv2.calibrateCamera() OpenCV function by passing two arrays(objpoints, imgpoints) along with image size parameter. I applied this distortion correction function; cv2.undistort().
 
 ### Pipeline (test images) : 
 ---
@@ -55,11 +54,12 @@ From left, ABS Thresholded X-direction Gradient, ABS Thresholded Y-direction Gra
     4. In case of lane lines, we're only interested in edges of a particular orientation so that by taking arctangent of x and y gradients the direction of the gradient is obtained. However the direction of the gradient is much noisier than the gradient magnitude.  
 2) def hls_select, def hls_threshold(image, thresh_l=(160,255), thres_s=(180,255)):  
 Secold, I explored HLS color space transforms and color thresholds. Here's an example of my output for this experiment. 
-* [HLS Color Thresholds](./output_images/HLS_test6.jpg)
-* [HSV Color Thresholds](./output_images/HSV_test6.jpg)
-* [LUV Color Thresholds](./output_images/LUV_test6.jpg)
-* [LAB Color Thresholds](./output_images/LAB_test6.jpg)
-* [RGB Color Thresholds](./output_images/RGB_test6.jpg)
+*[HLS Color Thresholds](./output_images/HLS_test6.jpg)
+*[HSV Color Thresholds](./output_images/HSV_test6.jpg)
+*[LUV Color Thresholds](./output_images/LUV_test6.jpg)
+*[LAB Color Thresholds](./output_images/LAB_test6.jpg)
+*[RGB Color Thresholds](./output_images/RGB_test6.jpg)
+
 HLS L-channel measures the relative lightness or darkness of a color. S-channel, Saturation, measures relative colorfulness. So, as colors get lighter and closer to white, like lane colors, they have a lower saturation value. 
 Used a original [test6](./test_images/test6.jpg) first converted to grayscale, and applied L-channel, S-channel, and figured The S channel picks up the lines well, thus applied S-channel with a threshold that identifies the lines(the second image). I used open CV function (cv2.cvtColor(image, cv2.COLOR_BGR2HLS)) to get HLS color space.
 * S-channel of HLS colorspace is good to find the yellow line
@@ -69,11 +69,8 @@ With all in combination with gradients, I got the final combined binary by addin
 ``code
   combined[((gradx == 1) & (grady == 1)) | ((hls_binary == 1) & (lab_binary == 1)) | ((mag_binary == 1) & (dir_binary == 1))] = 1
 ``
-
-
 3) Lastly, I experimented a combination of color and gradient thresholds to generate a binary image. 
 There is no "ground truth" when it comes to applying the combination of methods (i.e., color transforms, gradients). Just experimental threshold values are identified from experiments: thresh_Lchannel=(160,255), thres_Schannel=(180,255)
-
 
 3. A perspective transform (def warper(img, src, dst): )
 OpenCV function (cv2.getPerspectiveTransform) is used to correctly rectify each image to a "birds-eye view". To obtain "brids-eye view" simple ways is to investigate an image where the lane lines are straight, and find four points lying along the lines that, after perspective transform, make the lines look straight and vertical from a bird's eye view perspective.  
@@ -173,11 +170,11 @@ Calculated the radius of curvature based on pixel values, so the radius is in pi
 6. result
 Everything is put together to project the lanes on an image at first, but later on, the same technique is used on a frame by frame processing of a video stream.
 Here is an example of my result on a test image with lanes, curvature, and position from center:
-![test6](./output_images/fill_lane_7.jpg)
+![test6](./output_images/fill_lane_6.jpg)
 All test image outputs filled with lanes, curvature, and position from center are saved here:
 [output_images](./output_images) by following naming convention : fill_lane_{number}.jpg
 fill_lane_0.jpg to fill_lane_7.jpg 
-All 8 images are stored in one figure: ![all_fill_lane](./output_images/fill_lane_all.jpg) 
+All 8 images are stored in one figure:[all_fill_lane](./output_images/fill_lane_all.jpg) 
 The fit from the rectified image has been warped back onto the original image and plotted to identify the lane boundaries. 
 
 ### Pipeline (videos) : 
