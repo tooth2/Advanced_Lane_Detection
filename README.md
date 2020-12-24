@@ -41,7 +41,8 @@ I then used the output objpoints and imgpoints to compute the camera calibration
 1. Distortion correction  
 Distortion correction that was previously calculated via camera calibration has been correctly applied to each image. So that I used same parameter (calibration_params) from chessboard case and then applied the cv2.undistort() function to all the images in the  [test_image folder](./test_images). All distortion corrected image are obtained and stored in [output image folder](./output_images).Here is one example:  
 [test5_corrected image](./output_images/test5_undistort.jpg) is obtained from a original [test5 image](./test_images/test5.jpg)
-All images in the [test_image folder](./test_images) are applied and saved by following naming convention in the [output_images folder](./output_images): *orginal file name_undistort.jpg*
+All images in the [test_image folder](./test_images) are applied and saved by following naming convention in the [output_images folder](./output_images): 
+*orginal file name_undistort.jpg* 
 
 2. color transforms, gradients and combination of method with thresholded
 1) def abs_sobel_thresh, def mag_thresh, def dir_threshold  
@@ -54,11 +55,11 @@ From left, ABS Thresholded X-direction Gradient, ABS Thresholded Y-direction Gra
     4. In case of lane lines, we're only interested in edges of a particular orientation so that by taking arctangent of x and y gradients the direction of the gradient is obtained. However the direction of the gradient is much noisier than the gradient magnitude.  
 2) def hls_select, def hls_threshold(image, thresh_l=(160,255), thres_s=(180,255)):  
 Secold, I explored HLS color space transforms and color thresholds. Here's an example of my output for this experiment. 
-*[HLS Color Thresholds](./output_images/HLS_test6.jpg)
-*[HSV Color Thresholds](./output_images/HSV_test6.jpg)
-*[LUV Color Thresholds](./output_images/LUV_test6.jpg)
-*[LAB Color Thresholds](./output_images/LAB_test6.jpg)
-*[RGB Color Thresholds](./output_images/RGB_test6.jpg)
+* [HLS Color Thresholds](./output_images/HLS_test6.jpg)
+* [HSV Color Thresholds](./output_images/HSV_test6.jpg)
+* [LUV Color Thresholds](./output_images/LUV_test6.jpg)
+* [LAB Color Thresholds](./output_images/LAB_test6.jpg)
+* [RGB Color Thresholds](./output_images/RGB_test6.jpg)
 
 HLS L-channel measures the relative lightness or darkness of a color. S-channel, Saturation, measures relative colorfulness. So, as colors get lighter and closer to white, like lane colors, they have a lower saturation value. 
 Used a original [test6](./test_images/test6.jpg) first converted to grayscale, and applied L-channel, S-channel, and figured The S channel picks up the lines well, thus applied S-channel with a threshold that identifies the lines(the second image). I used open CV function (cv2.cvtColor(image, cv2.COLOR_BGR2HLS)) to get HLS color space.
@@ -96,7 +97,7 @@ This resulted in the following source and destination points:
 | 1100, 670     | 1100, 720     |
   
 I verified that my perspective transform was working as expected by drawing the src and dst points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image for both a straight line and a curved line.  Even though this shows transformed coordinates in a birds' eye view, There needed to estimate/detect curved line on the right. So It needs to calcuate curvature for this curved lines.
-[original vs warped image](./output_images/warped_StraightLine_CurvedLine.jpg)  
+![original vs warped image](./output_images/warped_StraightLine_CurvedLine.jpg)  
   
 4. lane-line pixels Identification(def find_lane_pixels(binary_warped):
 fit their positions with a 2nd order polynomial(def fit_polynomial(binary_warped):  
