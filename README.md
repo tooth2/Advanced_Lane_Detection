@@ -1,9 +1,3 @@
-# Advanced Lane Finding
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
-  
-The project goal is to write a software pipeline to identify the lane boundaries in a video and a detailed writeup of the project. 
-  
-
 ## The Project
 ---
 
@@ -61,13 +55,13 @@ From left, ABS Thresholded X-direction Gradient, ABS Thresholded Y-direction Gra
     4. In case of lane lines, we're only interested in edges of a particular orientation so that by taking arctangent of x and y gradients the direction of the gradient is obtained. However the direction of the gradient is much noisier than the gradient magnitude.  
 2) def hls_select, def hls_threshold(image, thresh_l=(160,255), thres_s=(180,255)):  
 Secold, I explored HLS color space transforms and color thresholds. Here's an example of my output for this experiment. 
-![HLS Color Thresholds](./output_images/HLS_test6.jpg)
-![HSV Color Thresholds](./output_images/HSV_test6.jpg)
-![LUV Color Thresholds](./output_images/LUV_test6.jpg)
-![LAB Color Thresholds](./output_images/LAB_test6.jpg)
-![RGB Color Thresholds](./output_images/RGB_test6.jpg)
+* [HLS Color Thresholds](./output_images/HLS_test6.jpg)
+* [HSV Color Thresholds](./output_images/HSV_test6.jpg)
+* [LUV Color Thresholds](./output_images/LUV_test6.jpg)
+* [LAB Color Thresholds](./output_images/LAB_test6.jpg)
+* [RGB Color Thresholds](./output_images/RGB_test6.jpg)
 HLS L-channel measures the relative lightness or darkness of a color. S-channel, Saturation, measures relative colorfulness. So, as colors get lighter and closer to white, like lane colors, they have a lower saturation value. 
-Used a original ![test6](./test_images/test6.jpg) first converted to grayscale, and applied L-channel, S-channel, and figured The S channel picks up the lines well, thus applied S-channel with a threshold that identifies the lines(the second image). I used open CV function (cv2.cvtColor(image, cv2.COLOR_BGR2HLS)) to get HLS color space.
+Used a original [test6](./test_images/test6.jpg) first converted to grayscale, and applied L-channel, S-channel, and figured The S channel picks up the lines well, thus applied S-channel with a threshold that identifies the lines(the second image). I used open CV function (cv2.cvtColor(image, cv2.COLOR_BGR2HLS)) to get HLS color space.
 * S-channel of HLS colorspace is good to find the yellow line
 * R-channel of RGB colorspace is pretty good to find required lines in some conditions.
 * L-channel of LAB colorspace for the white line.
@@ -145,7 +139,7 @@ After obtaining binary warped image, then I only take the half bottom of the ima
 And then used left_lane_inds and right_lane_inds to hold the pixel values contained within the boundaries of a given sliding window. I take the polynomial functions that fit before (left_fit and right_fit), along with a hyperparameter margin, to determine which activated pixels fall into the 'yellow' shaded areas in the below image. 
 The left and right line have been identified and I used thier x and y pixel positions to fit with a curved functional form( a second order polynomial curve):f(y) = Ay^2 + By + C (using `np.polyfit`). The lane lines in the warped image are near vertical and may have the same x value for more than one y value. 
 From test5.jpg I fit the 2nd order polynomial curve like this:
-[lane-line poly pixel]('./output_images/test5_poly.jpg')
+![lane-line poly pixel]('./output_images/test5_poly.jpg')
 
 
 5. def measure_curvature(left_fit, right_fit, warped_combination):
