@@ -181,9 +181,8 @@ The fit from the rectified image has been warped back onto the original image an
 ### Pipeline (videos) : 
 ---
 1. The final video outputs are stored in `output_videos` folder. The performance of videos are decent , somewhat jittering lines when the scene is filled with shades but no catastrophic failures.  
-- Main output: [project_video_result.mp4](./output_videos/project_video_result.mp4)  
-- ![Result](project_result.gif)
-- For challen(optional) output: [project_video_challenge.mp4](./output_videos/project_video_challenge.mp4)  
+- Main output:  ![Result](project_result.gif)
+- For challen(optional) output: ![challenge](challenge.gif)
 
 The image processing pipeline that was established to find the lane lines in images successfully processes the video. The output here is a video where the lanes are identified in every frame, and outputs are generated regarding the radius of curvature of the lane and vehicle position within the lane. The pipeline maps out curved lines and output videos are stored in [output video folder](./output_videos/) for both the main project video and a challenge video.
 
